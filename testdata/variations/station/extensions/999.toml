@@ -1,0 +1,2 @@
+# kind と type を省略（kind = "device"、type = "phone"）。[pjsip.*] も無い
+name = "最小"

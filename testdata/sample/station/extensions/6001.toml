@@ -1,0 +1,19 @@
+# samples/station/extensions/6001.toml を元にした例。
+# 段階0には defaults.toml が無いので、[pjsip.*] を各ファイルに直接書く。
+# 素通し用の [mantela]（image）は段階2なので書かない
+name = "黒電話"
+type = "dialphone"
+identifier = "A1B2C3D4"
+model = "600-A2"
+note = "メモ（Mantela にも Asterisk にも反映されない）"
+
+[pjsip.endpoint]
+transport = "transport-udp"
+disallow = "all"
+allow = ["alaw", "ulaw", "opus"]
+dtmf_mode = "inband"
+language = "ja"
+tone_zone = "jp"
+
+[pjsip.aor]
+max_contacts = 1

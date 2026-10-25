@@ -1,0 +1,10 @@
+# publish = false: Mantela には載せず、トランクと発信ルートだけ作る
+prefix = "3301"
+publish = false
+
+[trunk]
+mode = "register"
+host = "pbx.station-d.example"
+strip_prefix = false
+prepend = "9"
+username = "user-d"

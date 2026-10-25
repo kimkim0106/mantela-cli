@@ -1,0 +1,3 @@
+warning: testdata/variations/station/extensions/1000.toml: unknown key unknown_key is ignored
+warning: testdata/variations/station/extensions/1000.toml: unknown key mantela is ignored
+warning: testdata/variations/station/providers/station-c.toml: [pjsip.*] is ignored because there is no [trunk]

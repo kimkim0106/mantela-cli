@@ -1,0 +1,8 @@
+# [trunk] が無い: Mantela に載せるだけ
+name = "Station C"
+prefix = "320"
+identifier = "c3d4e5f6-0718-4293-a4b5-c6d7e8f90a1b"
+url = "https://station-c.example.org/.well-known/mantela.json"
+
+[pjsip.endpoint]
+language = "ja"

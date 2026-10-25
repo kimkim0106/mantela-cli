@@ -1,0 +1,42 @@
+{
+  "$schema": "https://tkytel.github.io/mantela/0.1.x/mantela.schema.json",
+  "version": "0.1.0",
+  "aboutMe": {
+    "name": "Example Station",
+    "preferredPrefix": [
+      "200"
+    ],
+    "identifier": "123e4567-e89b-12d3-a456-426614174000",
+    "sipUri": [
+      "sip:pbx.example.net:5060;transport=udp"
+    ]
+  },
+  "extensions": [
+    {
+      "name": "黒電話",
+      "extension": "6001",
+      "identifier": "A1B2C3D4",
+      "model": "600-A2",
+      "type": "dialphone"
+    },
+    {
+      "name": "スマートフォン",
+      "extension": "6002",
+      "identifier": "E5F6G7H8",
+      "type": "smartphone"
+    },
+    {
+      "name": "FAX",
+      "extension": "6003",
+      "type": "fax"
+    }
+  ],
+  "providers": [
+    {
+      "name": "Station A",
+      "prefix": "300",
+      "identifier": "987fcdeb-51a2-43d1-9c4e-5a6b7c8d9e0f",
+      "mantela": "https://station-a.example.org/.well-known/mantela.json"
+    }
+  ]
+}
