@@ -1,0 +1,15 @@
+name = "検証用"
+type = "phone"
+publish = false           # Mantela に載せない（Asterisk の設定は作る）
+note = "新しい ATA の試験に使う"
+
+[pjsip.endpoint]
+transport = "transport-udp"
+disallow = "all"
+allow = ["alaw", "ulaw", "opus"]
+dtmf_mode = "auto"
+language = "ja"
+tone_zone = "jp"
+
+[pjsip.aor]
+max_contacts = 1

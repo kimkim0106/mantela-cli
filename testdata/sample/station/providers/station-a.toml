@@ -1,0 +1,23 @@
+# 自局から登録しに行く相手局
+name = "Station A"
+prefix = "300"
+identifier = "987fcdeb-51a2-43d1-9c4e-5a6b7c8d9e0f"
+url = "https://station-a.example.org/.well-known/mantela.json"
+
+[trunk]
+mode = "register"
+host = "192.0.2.10"
+# 移行前の PBX で使っていた値を引き継ぐ（省略時は slug から生成）
+username = "SIP-TRUNK-12345678"
+contact_user = "SIP-TRUNK-12345678"
+
+[pjsip.endpoint]
+transport = "transport-udp"
+disallow = "all"
+allow = ["alaw", "ulaw"]
+dtmf_mode = "rfc4733"
+language = "ja"
+tone_zone = "jp"
+
+[pjsip.registration]
+transport = "transport-udp"

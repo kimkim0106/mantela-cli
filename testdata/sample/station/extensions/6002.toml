@@ -1,0 +1,14 @@
+name = "スマートフォン"
+type = "smartphone"
+identifier = "E5F6G7H8"
+
+[pjsip.endpoint]
+transport = "transport-udp"
+disallow = "all"
+allow = ["alaw", "ulaw", "opus"]
+dtmf_mode = "auto"
+language = "ja"
+tone_zone = "jp"
+
+[pjsip.aor]
+max_contacts = 2          # 家の中と外出先の2か所から登録する

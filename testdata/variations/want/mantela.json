@@ -1,0 +1,52 @@
+{
+  "$schema": "https://tkytel.github.io/mantela/0.1.x/mantela.schema.json",
+  "version": "0.1.3",
+  "aboutMe": {
+    "name": "<Variations> & Station",
+    "preferredPrefix": "200",
+    "identifier": "123e4567-e89b-12d3-a456-426614174000",
+    "sipUri": [
+      "sip:pbx.example.net:5060;transport=udp"
+    ],
+    "geolocationCoordinates": {
+      "longitude": 139.76,
+      "latitude": 35.68
+    },
+    "x-zeta": "スキーマに無い項目",
+    "x-alpha": 1
+  },
+  "extensions": [
+    {
+      "name": "値の型と順序",
+      "extension": "1000",
+      "identifier": "Z9Y8X7W6",
+      "type": "phone"
+    },
+    {
+      "name": "最小",
+      "extension": "999",
+      "type": "phone"
+    }
+  ],
+  "providers": [
+    {
+      "name": "Station A",
+      "prefix": "300",
+      "identifier": "987fcdeb-51a2-43d1-9c4e-5a6b7c8d9e0f",
+      "mantela": "https://station-a.example.org/.well-known/mantela.json"
+    },
+    {
+      "name": "Station B",
+      "prefix": "310",
+      "identifier": "5f0c2a7e-3b1d-4e8a-9c6f-2d4b8a1e7c30",
+      "mantela": "https://station-b.example.org/.well-known/mantela.json",
+      "unavailable": true
+    },
+    {
+      "name": "Station C",
+      "prefix": "320",
+      "identifier": "c3d4e5f6-0718-4293-a4b5-c6d7e8f90a1b",
+      "mantela": "https://station-c.example.org/.well-known/mantela.json"
+    }
+  ]
+}

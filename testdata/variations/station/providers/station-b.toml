@@ -1,0 +1,10 @@
+# enabled = false: Asterisk の設定は作らず、Mantela には unavailable で載せる
+name = "Station B"
+prefix = "310"
+identifier = "5f0c2a7e-3b1d-4e8a-9c6f-2d4b8a1e7c30"
+url = "https://station-b.example.org/.well-known/mantela.json"
+enabled = false
+
+[trunk]
+mode = "register"
+host = "192.0.2.20"

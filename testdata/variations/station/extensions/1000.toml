@@ -1,0 +1,22 @@
+# 文字列順なので 999 より前に来る
+name = "値の型と順序"
+kind = "device"
+identifier = "Z9Y8X7W6"
+unknown_key = "警告して使わない"
+
+[pjsip.auth]
+realm = "example"         # 骨組みのキーの後ろに足す
+
+[pjsip.aor]
+max_contacts = 3          # 整数
+remove_existing = true    # 真偽値
+qualify_frequency = 60
+
+[pjsip.endpoint]
+context = "from-phones"   # context を書けば、既定の mantela-phones は入れない
+zz_first = "yes"          # 名前の順ではなく書いた順
+allow = []                # 空の配列は何も出さない
+aa_last = "no"
+
+[mantela]                 # 素通し用の [mantela] は段階2なので警告して使わない
+image = "https://example.net/a.jpg"

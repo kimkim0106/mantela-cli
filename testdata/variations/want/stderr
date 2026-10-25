@@ -1,0 +1,3 @@
+警告: testdata/variations/station/extensions/1000.toml: 未知のキー unknown_key は使いません
+警告: testdata/variations/station/extensions/1000.toml: 未知のキー mantela は使いません
+警告: testdata/variations/station/providers/station-c.toml: [trunk] が無いので [pjsip.*] は使いません

@@ -1,0 +1,12 @@
+# username / contact_user を省略（slug から作る）
+name = "Station A"
+prefix = "300"
+identifier = "987fcdeb-51a2-43d1-9c4e-5a6b7c8d9e0f"
+url = "https://station-a.example.org/.well-known/mantela.json"
+
+[trunk]
+mode = "register"
+host = "192.0.2.10"
+
+[pjsip.registration]
+retry_interval = 30

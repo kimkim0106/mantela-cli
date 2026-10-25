@@ -1,0 +1,15 @@
+[mantela-cli]
+version = 1               # 局ディレクトリの形式の版
+
+[mantela]
+version = "0.1.0"         # 出力する Mantela のバージョン
+
+[mantela.aboutMe]         # mantela.json の aboutMe にそのまま出力する
+identifier = "123e4567-e89b-12d3-a456-426614174000"
+name = "Example Station"
+preferredPrefix = ["200"]
+sipUri = ["sip:pbx.example.net:5060;transport=udp"]
+
+[asterisk]
+secrets = "/etc/asterisk/pjsip_secrets.conf"
+hop = true
