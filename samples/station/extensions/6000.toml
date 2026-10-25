@@ -1,0 +1,6 @@
+name = "全台呼び出し"
+kind = "group"
+type = "main"             # 省略しても members が2件以上なので main になる
+identifier = "M9N8P7Q6"
+members = ["6001", "6002"]
+timeout = 30

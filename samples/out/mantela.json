@@ -1,0 +1,76 @@
+{
+  "$schema": "https://tkytel.github.io/mantela/0.1.x/mantela.schema.json",
+  "version": "0.1.0",
+  "aboutMe": {
+    "name": "Example Station",
+    "preferredPrefix": [
+      "200"
+    ],
+    "identifier": "123e4567-e89b-12d3-a456-426614174000",
+    "sipUri": [
+      "sip:pbx.example.net:5060;transport=udp"
+    ]
+  },
+  "extensions": [
+    {
+      "name": "時報",
+      "extension": "117",
+      "type": "information"
+    },
+    {
+      "name": "エコーテスト",
+      "extension": "1234",
+      "type": "application"
+    },
+    {
+      "name": "全台呼び出し",
+      "extension": "6000",
+      "identifier": "M9N8P7Q6",
+      "type": "main",
+      "transferTo": [
+        "A1B2C3D4",
+        "E5F6G7H8"
+      ]
+    },
+    {
+      "name": "黒電話",
+      "extension": "6001",
+      "identifier": "A1B2C3D4",
+      "model": "600-A2",
+      "type": "dialphone",
+      "image": "https://example.net/kurodenwa.jpg"
+    },
+    {
+      "name": "スマートフォン",
+      "extension": "6002",
+      "identifier": "E5F6G7H8",
+      "type": "smartphone"
+    },
+    {
+      "name": "FAX",
+      "extension": "6003",
+      "type": "fax"
+    }
+  ],
+  "providers": [
+    {
+      "name": "Station A",
+      "prefix": "300",
+      "identifier": "987fcdeb-51a2-43d1-9c4e-5a6b7c8d9e0f",
+      "mantela": "https://station-a.example.org/.well-known/mantela.json"
+    },
+    {
+      "name": "Station B",
+      "prefix": "310",
+      "identifier": "5f0c2a7e-3b1d-4e8a-9c6f-2d4b8a1e7c30",
+      "mantela": "https://station-b.example.org/.well-known/mantela.json",
+      "unavailable": true
+    },
+    {
+      "name": "Station C",
+      "prefix": "320",
+      "identifier": "c3d4e5f6-0718-4293-a4b5-c6d7e8f90a1b",
+      "mantela": "https://station-c.example.org/.well-known/mantela.json"
+    }
+  ]
+}

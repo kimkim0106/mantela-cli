@@ -1,0 +1,10 @@
+# 登録しない相手局（tailnet などの固定 IP で受ける）
+name = "Station C"
+prefix = "320"
+identifier = "c3d4e5f6-0718-4293-a4b5-c6d7e8f90a1b"
+url = "https://station-c.example.org/.well-known/mantela.json"
+
+[trunk]
+mode = "ip"
+host = "192.0.2.30"
+strip_prefix = false      # この相手局はフル番号で受ける

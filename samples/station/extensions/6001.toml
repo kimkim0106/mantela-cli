@@ -1,0 +1,11 @@
+name = "黒電話"
+type = "dialphone"
+identifier = "A1B2C3D4"
+model = "600-A2"
+note = "メモ（Mantela にも Asterisk にも反映されない）"
+
+[pjsip.endpoint]
+dtmf_mode = "inband"      # defaults.toml の値を上書き（位置は defaults.toml のまま）
+
+[mantela]                 # extensions[] の要素にそのままマージする
+image = "https://example.net/kurodenwa.jpg"

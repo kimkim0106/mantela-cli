@@ -1,0 +1,4 @@
+name = "時報"
+kind = "dialplan"
+type = "information"
+target = "jihou,s,1"

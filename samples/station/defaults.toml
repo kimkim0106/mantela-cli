@@ -1,0 +1,23 @@
+# 内線の既定値（extensions/*.toml と同じ構造）
+[extension.pjsip.endpoint]
+transport = "transport-udp"   # transport は利用者の pjsip.conf で定義する
+disallow = "all"
+allow = ["alaw", "ulaw", "opus"]
+dtmf_mode = "auto"
+language = "ja"
+tone_zone = "jp"
+
+[extension.pjsip.aor]
+max_contacts = 1
+
+# トランクの既定値（providers/*.toml と同じ構造）
+[provider.pjsip.endpoint]
+transport = "transport-udp"
+disallow = "all"
+allow = ["alaw", "ulaw"]
+dtmf_mode = "rfc4733"
+language = "ja"
+tone_zone = "jp"
+
+[provider.pjsip.registration]
+transport = "transport-udp"

@@ -1,0 +1,11 @@
+# 相手局の保守中。トランクは作らず、Mantela には unavailable として載せる
+name = "Station B"
+prefix = "310"
+identifier = "5f0c2a7e-3b1d-4e8a-9c6f-2d4b8a1e7c30"
+url = "https://station-b.example.org/.well-known/mantela.json"
+enabled = false
+note = "相手局が機器を入れ替え中。戻ったら enabled を消す"
+
+[trunk]
+mode = "register"
+host = "192.0.2.20"

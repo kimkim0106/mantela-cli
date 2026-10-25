@@ -1,0 +1,7 @@
+# identifier を省略した例（Mantela には identifier を出さない）
+name = "FAX"
+type = "fax"
+
+[pjsip.endpoint]
+allow = ["ulaw"]          # 配列ごと上書き
+t38_udptl = "yes"         # defaults.toml に無いキーは後ろに足す

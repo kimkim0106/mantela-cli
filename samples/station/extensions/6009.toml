@@ -1,0 +1,4 @@
+name = "検証用"
+type = "phone"
+publish = false           # Mantela に載せない（Asterisk の設定は作る）
+note = "新しい ATA の試験に使う"

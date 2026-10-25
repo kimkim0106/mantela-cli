@@ -1,0 +1,4 @@
+name = "エコーテスト"
+kind = "dialplan"
+type = "application"
+target = "echo-test,s,1"  # 利用者の extensions.conf にあるコンテキストへ Goto
