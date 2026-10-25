@@ -168,7 +168,7 @@ func (st *Station) loadStation() error {
 	var f stationFile
 	md, err := toml.DecodeFile(path, &f)
 	if errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("%s がありません。局ディレクトリを -C で指定してください", path)
+		return fmt.Errorf("%s not found; specify the station directory with -C", path)
 	}
 	if err != nil {
 		return fmt.Errorf("%s: %w", path, err)
@@ -176,16 +176,16 @@ func (st *Station) loadStation() error {
 	st.warnUndecoded(path, md, toml.Key{"mantela", "aboutMe"})
 
 	if !md.IsDefined("mantela-cli") {
-		return fmt.Errorf("%s: [mantela-cli] がありません。局ディレクトリではないようです（-C で指定したディレクトリを確かめてください）", path)
+		return fmt.Errorf("%s: [mantela-cli] is missing; this does not look like a station directory (check the directory given with -C)", path)
 	}
 	v := f.MantelaCLI.Version
 	switch {
 	case v == nil:
-		return fmt.Errorf("%s: [mantela-cli] version がありません", path)
+		return fmt.Errorf("%s: [mantela-cli] version is missing", path)
 	case *v > FormatVersion:
-		return fmt.Errorf("%s: 局ディレクトリの形式の版 %d は、この mantela-cli では読めません（読めるのは版 %d まで）。新しい mantela-cli を使ってください", path, *v, FormatVersion)
+		return fmt.Errorf("%s: station directory format version %d is not supported by this mantela-cli (up to %d); use a newer mantela-cli", path, *v, FormatVersion)
 	case *v < 1:
-		return fmt.Errorf("%s: [mantela-cli] version = %d は正しくありません（1 以上の整数）", path, *v)
+		return fmt.Errorf("%s: [mantela-cli] version = %d is invalid (must be an integer >= 1)", path, *v)
 	}
 
 	st.MantelaVersion = f.Mantela.Version
@@ -227,11 +227,11 @@ func (st *Station) loadExtension(file tomlFile) (*Extension, []error) {
 	switch f.Kind {
 	case "", "device":
 	case "group", "dialplan":
-		errs = append(errs, fmt.Errorf("%s: kind = %q にはまだ対応していません（この版は kind = \"device\" だけ）", file.path, f.Kind))
+		errs = append(errs, fmt.Errorf("%s: kind = %q is not supported yet (this version supports only kind = \"device\")", file.path, f.Kind))
 	default:
-		errs = append(errs, fmt.Errorf("%s: kind = %q は正しくありません（device / group / dialplan）", file.path, f.Kind))
+		errs = append(errs, fmt.Errorf("%s: kind = %q is invalid (device / group / dialplan)", file.path, f.Kind))
 	}
-	pjsip, perrs := pjsipSections(md, file.path, f.Pjsip, extensionSections, "内線")
+	pjsip, perrs := pjsipSections(md, file.path, f.Pjsip, extensionSections, "extensions")
 	errs = append(errs, perrs...)
 	if len(errs) > 0 {
 		return nil, errs
@@ -294,14 +294,14 @@ func (st *Station) loadProvider(file tomlFile) (*Provider, []error) {
 		switch t.Mode {
 		case "register":
 			if t.Host == "" {
-				errs = append(errs, fmt.Errorf("%s: mode = \"register\" には [trunk] host が必要です", file.path))
+				errs = append(errs, fmt.Errorf("%s: [trunk] host is required for mode = \"register\"", file.path))
 			}
 		case "accept", "ip":
-			errs = append(errs, fmt.Errorf("%s: [trunk] mode = %q にはまだ対応していません（この版は mode = \"register\" だけ）", file.path, t.Mode))
+			errs = append(errs, fmt.Errorf("%s: [trunk] mode = %q is not supported yet (this version supports only mode = \"register\")", file.path, t.Mode))
 		case "":
-			errs = append(errs, fmt.Errorf("%s: [trunk] mode がありません", file.path))
+			errs = append(errs, fmt.Errorf("%s: [trunk] mode is missing", file.path))
 		default:
-			errs = append(errs, fmt.Errorf("%s: [trunk] mode = %q は正しくありません（register / accept / ip）", file.path, t.Mode))
+			errs = append(errs, fmt.Errorf("%s: [trunk] mode = %q is invalid (register / accept / ip)", file.path, t.Mode))
 		}
 		p.Trunk = &Trunk{
 			Mode:        t.Mode,
@@ -314,11 +314,11 @@ func (st *Station) loadProvider(file tomlFile) (*Provider, []error) {
 	}
 	// [trunk] が無ければ pjsip の設定は作らないので、[pjsip.*] も読まない
 	if p.Trunk != nil {
-		pjsip, perrs := pjsipSections(md, file.path, f.Pjsip, registerSections, "mode = \"register\" のトランク")
+		pjsip, perrs := pjsipSections(md, file.path, f.Pjsip, registerSections, "mode = \"register\" trunks")
 		errs = append(errs, perrs...)
 		p.Pjsip = pjsip
 	} else if len(f.Pjsip) > 0 {
-		st.warnf("%s: [trunk] が無いので [pjsip.*] は使いません", file.path)
+		st.warnf("%s: [pjsip.*] is ignored because there is no [trunk]", file.path)
 	}
 	if len(errs) > 0 {
 		return nil, errs
@@ -345,7 +345,7 @@ func (st *Station) warnUndecoded(path string, md toml.MetaData, passthrough toml
 		if slices.ContainsFunc(undecoded, func(p toml.Key) bool { return len(p) < len(k) && hasPrefix(k, p) }) {
 			continue
 		}
-		st.warnf("%s: 未知のキー %s は使いません", path, k)
+		st.warnf("%s: unknown key %s is ignored", path, k)
 	}
 }
 

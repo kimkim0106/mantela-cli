@@ -23,27 +23,27 @@ func (st *Station) validateMantela() []error {
 
 	switch {
 	case st.MantelaVersion == "":
-		errs = append(errs, fmt.Errorf("%s: [mantela] version がありません", path))
+		errs = append(errs, fmt.Errorf("%s: [mantela] version is missing", path))
 	case !strings.HasPrefix(st.MantelaVersion, "0.1."):
-		errs = append(errs, fmt.Errorf("%s: [mantela] version = %q には対応していません（0.1.x だけ）", path, st.MantelaVersion))
+		errs = append(errs, fmt.Errorf("%s: [mantela] version = %q is not supported (only 0.1.x)", path, st.MantelaVersion))
 	}
 
 	if st.AboutMe == nil {
-		errs = append(errs, fmt.Errorf("%s: [mantela.aboutMe] がありません", path))
+		errs = append(errs, fmt.Errorf("%s: [mantela.aboutMe] is missing", path))
 	} else {
 		for _, key := range []string{"identifier", "name"} {
 			if v, _ := st.AboutMe.Get(key); !nonEmptyString(v) {
-				errs = append(errs, fmt.Errorf("%s: [mantela.aboutMe] %s は必須です（空でない文字列）", path, key))
+				errs = append(errs, fmt.Errorf("%s: [mantela.aboutMe] %s is required (non-empty string)", path, key))
 			}
 		}
 		if v, _ := st.AboutMe.Get("preferredPrefix"); !stringOrStrings(v) {
-			errs = append(errs, fmt.Errorf("%s: [mantela.aboutMe] preferredPrefix は必須です（文字列か、文字列の配列）", path))
+			errs = append(errs, fmt.Errorf("%s: [mantela.aboutMe] preferredPrefix is required (string or array of strings)", path))
 		}
 	}
 
 	for _, e := range st.Extensions {
 		if e.Publish && e.Name == "" {
-			errs = append(errs, fmt.Errorf("%s: Mantela に載せる内線には name が必要です（載せないなら publish = false）", e.File))
+			errs = append(errs, fmt.Errorf("%s: name is required for extensions published in Mantela (or set publish = false)", e.File))
 		}
 	}
 	for _, p := range st.Providers {
@@ -52,12 +52,12 @@ func (st *Station) validateMantela() []error {
 				{"name", p.Name}, {"prefix", p.Prefix}, {"identifier", p.Identifier}, {"url", p.URL},
 			} {
 				if f.value == "" {
-					errs = append(errs, fmt.Errorf("%s: Mantela に載せる provider には %s が必要です（載せないなら publish = false）", p.File, f.key))
+					errs = append(errs, fmt.Errorf("%s: %s is required for providers published in Mantela (or set publish = false)", p.File, f.key))
 				}
 			}
 		} else if p.Enabled && p.Trunk != nil && p.Prefix == "" {
 			// 載せない provider でも、発信ルートを作るには prefix が要る
-			errs = append(errs, fmt.Errorf("%s: 発信ルートを作るには prefix が必要です", p.File))
+			errs = append(errs, fmt.Errorf("%s: prefix is required to generate the outbound route", p.File))
 		}
 	}
 	return errs
@@ -70,7 +70,7 @@ func (st *Station) validateDuplicates() []error {
 			return
 		}
 		if prev, ok := seen[value]; ok {
-			errs = append(errs, fmt.Errorf("%s: %s %q が %s と重複しています", file, kind, value, prev))
+			errs = append(errs, fmt.Errorf("%s: %s %q is also used in %s", file, kind, value, prev))
 			return
 		}
 		seen[value] = file
@@ -97,7 +97,7 @@ func (st *Station) validateDuplicates() []error {
 			continue
 		}
 		if prev, ok := names[p.Slug]; ok {
-			errs = append(errs, fmt.Errorf("%s: slug %q が内線番号（%s）と同じなので、pjsip.conf のセクション名が重複します", p.File, p.Slug, prev))
+			errs = append(errs, fmt.Errorf("%s: slug %q is the same as an extension number (%s), so pjsip.conf section names would collide", p.File, p.Slug, prev))
 		}
 	}
 	return errs

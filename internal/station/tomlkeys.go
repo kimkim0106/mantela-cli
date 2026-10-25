@@ -21,18 +21,18 @@ func pjsipSections(md toml.MetaData, path string, raw map[string]map[string]any,
 	sections := map[string]PjsipSection{}
 	for _, kind := range sortedKeys(md, toml.Key{"pjsip"}, raw) {
 		if !slices.Contains(knownSections, kind) {
-			errs = append(errs, fmt.Errorf("%s: [pjsip.%s] は知らないセクション種別です（%s）", path, kind, strings.Join(knownSections, " / ")))
+			errs = append(errs, fmt.Errorf("%s: [pjsip.%s] is not a known section type (%s)", path, kind, strings.Join(knownSections, " / ")))
 			continue
 		}
 		if !slices.Contains(allowed, kind) {
-			errs = append(errs, fmt.Errorf("%s: [pjsip.%s] は%sには書けません（%s）", path, kind, what, strings.Join(allowed, " / ")))
+			errs = append(errs, fmt.Errorf("%s: [pjsip.%s] is not allowed for %s (%s)", path, kind, what, strings.Join(allowed, " / ")))
 			continue
 		}
 		var sec PjsipSection
 		for _, key := range sortedKeys(md, toml.Key{"pjsip", kind}, raw[kind]) {
 			values, ok := pjsipValues(raw[kind][key])
 			if !ok {
-				errs = append(errs, fmt.Errorf("%s: [pjsip.%s] %s の値は、改行を含まない文字列・整数・真偽値か、その配列にしてください", path, kind, key))
+				errs = append(errs, fmt.Errorf("%s: [pjsip.%s] %s must be a string without newlines, an integer, a boolean, or an array of them", path, kind, key))
 				continue
 			}
 			sec = append(sec, PjsipKey{Name: key, Values: values})

@@ -15,14 +15,14 @@ import (
 	"github.com/kimkim0106/mantela-cli/internal/station"
 )
 
-const usage = `使い方: mantela-cli [-C DIR] <コマンド> [引数]
+const usage = `Usage: mantela-cli [-C DIR] <command> [arguments]
 
-コマンド:
+Commands:
   build [--mantela FILE] [--asterisk DIR]
-        局ディレクトリから mantela.json と Asterisk 用の設定を生成する
+        generate mantela.json and Asterisk config from the station directory
 
-オプション:
-  -C DIR  局ディレクトリ（既定はカレントディレクトリ）
+Options:
+  -C DIR  station directory (default: current directory)
 `
 
 // 終了コード
@@ -40,7 +40,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("mantela-cli", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() { fmt.Fprint(stderr, usage) }
-	dir := fs.String("C", ".", "局ディレクトリ")
+	dir := fs.String("C", ".", "station `DIR`")
 	if err := fs.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return exitOK
@@ -60,7 +60,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprint(stdout, usage)
 		return exitOK
 	default:
-		fmt.Fprintf(stderr, "mantela-cli: 知らないコマンドです: %s\n\n", cmd)
+		fmt.Fprintf(stderr, "mantela-cli: unknown command: %s\n\n", cmd)
 		fs.Usage()
 		return exitUsage
 	}
@@ -69,10 +69,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 func runBuild(dir string, args []string, stderr io.Writer) int {
 	fs := flag.NewFlagSet("build", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	mantelaPath := fs.String("mantela", "", "mantela.json の出力先 `FILE`")
-	asteriskDir := fs.String("asterisk", "", "Asterisk 用の設定の出力先 `DIR`（mantela-cli 専用のディレクトリ）")
+	mantelaPath := fs.String("mantela", "", "write mantela.json to `FILE`")
+	asteriskDir := fs.String("asterisk", "", "write Asterisk config to `DIR` (a directory dedicated to mantela-cli)")
 	fs.Usage = func() {
-		fmt.Fprint(stderr, "使い方: mantela-cli [-C DIR] build [--mantela FILE] [--asterisk DIR]\n\n")
+		fmt.Fprint(stderr, "Usage: mantela-cli [-C DIR] build [--mantela FILE] [--asterisk DIR]\n\n")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -82,16 +82,16 @@ func runBuild(dir string, args []string, stderr io.Writer) int {
 		return exitUsage
 	}
 	if fs.NArg() > 0 {
-		fmt.Fprintf(stderr, "mantela-cli build: 余分な引数があります: %v\n", fs.Args())
+		fmt.Fprintf(stderr, "mantela-cli build: unexpected arguments: %v\n", fs.Args())
 		return exitUsage
 	}
 	if *mantelaPath == "" && *asteriskDir == "" {
-		fmt.Fprint(stderr, "mantela-cli build: 出力先を --mantela か --asterisk（または両方）で指定してください\n")
+		fmt.Fprint(stderr, "mantela-cli build: specify an output with --mantela and/or --asterisk\n")
 		return exitUsage
 	}
 
 	if err := buildStation(dir, *mantelaPath, *asteriskDir, stderr); err != nil {
-		fmt.Fprintf(stderr, "エラー:\n%s\n", indent(err))
+		fmt.Fprintf(stderr, "error:\n%s\n", indent(err))
 		return exitError
 	}
 	return exitOK
@@ -102,7 +102,7 @@ func runBuild(dir string, args []string, stderr io.Writer) int {
 func buildStation(dir, mantelaPath, asteriskDir string, stderr io.Writer) error {
 	st, err := station.Load(dir)
 	for _, w := range st.Warnings {
-		fmt.Fprintf(stderr, "警告: %s\n", w)
+		fmt.Fprintf(stderr, "warning: %s\n", w)
 	}
 	if err != nil {
 		return err
