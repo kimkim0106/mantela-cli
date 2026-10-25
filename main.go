@@ -1,5 +1,5 @@
-// mantela-cli は、局ディレクトリ（TOML）から、公開用の mantela.json と
-// Asterisk（pjsip）の設定断片を生成する。
+// mantela-cli generates the public mantela.json and Asterisk (pjsip) config
+// fragments from a station directory written in TOML.
 package main
 
 import (
@@ -25,7 +25,7 @@ Options:
   -C DIR  station directory (default: current directory)
 `
 
-// 終了コード
+// Exit codes
 const (
 	exitOK    = 0
 	exitError = 1
@@ -97,8 +97,9 @@ func runBuild(dir string, args []string, stderr io.Writer) int {
 	return exitOK
 }
 
-// buildStation は局ディレクトリを読み、検査し、生成物を書き出す。
-// 生成と上書きの確認をすべて済ませてから書くので、エラーのときは何も書かない。
+// buildStation loads and validates the station directory and writes the outputs.
+// Nothing is written on error, because all outputs are generated and checked for
+// overwriting before any of them is written.
 func buildStation(dir, mantelaPath, asteriskDir string, stderr io.Writer) error {
 	st, err := station.Load(dir)
 	for _, w := range st.Warnings {
@@ -114,7 +115,7 @@ func buildStation(dir, mantelaPath, asteriskDir string, stderr io.Writer) error 
 	type output struct {
 		path      string
 		data      []byte
-		protected bool // 印の無いファイルや手で編集された生成物を上書きしない
+		protected bool // refuse to overwrite files without the header or edited by hand
 	}
 	var outputs []output
 	var errs []error
@@ -155,7 +156,7 @@ func buildStation(dir, mantelaPath, asteriskDir string, stderr io.Writer) error 
 	return nil
 }
 
-// indent は、複数行のエラーを1行ずつ字下げする。
+// indent indents each line of a multi-line error.
 func indent(err error) string {
 	return "  " + strings.ReplaceAll(err.Error(), "\n", "\n  ")
 }

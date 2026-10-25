@@ -13,18 +13,18 @@ import (
 	"github.com/kimkim0106/mantela-cli/internal/build"
 )
 
-var update = flag.Bool("update", false, "golden テストの期待ファイルを、いまの出力で書き換える")
+var update = flag.Bool("update", false, "rewrite the golden files with the current output")
 
-// TestGolden は、testdata/<名前>/station を build した出力を、testdata/<名前>/want と比べる。
+// TestGolden builds testdata/<name>/station and compares the output with testdata/<name>/want.
 //
-// want/stderr があれば、stderr（警告）も比べる。
+// If want/stderr exists, stderr (warnings) is compared too.
 func TestGolden(t *testing.T) {
 	cases, err := filepath.Glob("testdata/*/station")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(cases) == 0 {
-		t.Fatal("testdata に golden テストがありません")
+		t.Fatal("no golden tests in testdata")
 	}
 	for _, stationDir := range cases {
 		caseDir := filepath.Dir(stationDir)
@@ -36,7 +36,7 @@ func TestGolden(t *testing.T) {
 				"--asterisk", filepath.Join(out, "asterisk"),
 			}, &stdout, &stderr)
 			if code != exitOK {
-				t.Fatalf("終了コード %d\nstderr:\n%s", code, stderr.String())
+				t.Fatalf("exit code %d\nstderr:\n%s", code, stderr.String())
 			}
 			if stderr.Len() > 0 {
 				if err := os.WriteFile(filepath.Join(out, "stderr"), stderr.Bytes(), 0o644); err != nil {
@@ -59,12 +59,12 @@ func TestGolden(t *testing.T) {
 	}
 }
 
-// compareDirs は、2つのディレクトリにあるファイルの一覧と中身が同じかを確かめる。
+// compareDirs checks that two directories have the same files with the same content.
 func compareDirs(t *testing.T, want, got string) {
 	t.Helper()
 	wantFiles, gotFiles := listFiles(t, want), listFiles(t, got)
 	if !slices.Equal(wantFiles, gotFiles) {
-		t.Errorf("ファイルの一覧が違います\nwant: %v\ngot:  %v", wantFiles, gotFiles)
+		t.Errorf("file lists differ\nwant: %v\ngot:  %v", wantFiles, gotFiles)
 	}
 	for _, name := range wantFiles {
 		if !slices.Contains(gotFiles, name) {
@@ -73,7 +73,7 @@ func compareDirs(t *testing.T, want, got string) {
 		w := readFile(t, filepath.Join(want, name))
 		g := readFile(t, filepath.Join(got, name))
 		if w != g {
-			t.Errorf("%s が期待と違います\n--- want\n%s\n--- got\n%s", name, w, g)
+			t.Errorf("%s differs\n--- want\n%s\n--- got\n%s", name, w, g)
 		}
 	}
 }
@@ -104,7 +104,7 @@ func readFile(t *testing.T, path string) string {
 	return string(data)
 }
 
-// writeStation は、files（局ディレクトリからの相対パス → 中身）から局ディレクトリを作る。
+// writeStation creates a station directory from files (path relative to the directory -> content).
 func writeStation(t *testing.T, files map[string]string) string {
 	t.Helper()
 	dir := t.TempDir()
@@ -144,35 +144,35 @@ mode = "register"
 host = "192.0.2.10"
 `
 
-// TestBuildErrors は、build がエラーで止まり、何も書かないことを確かめる。
+// TestBuildErrors checks that build stops with an error and writes nothing.
 func TestBuildErrors(t *testing.T) {
 	tests := []struct {
 		name  string
 		files map[string]string
-		want  string // stderr に含まれるべき文字列
+		want  string // substring expected in stderr
 	}{
 		{
-			name:  "station.toml が無い",
+			name:  "no station.toml",
 			files: map[string]string{"extensions/6001.toml": `name = "a"`},
 			want:  "station.toml not found",
 		},
 		{
-			name:  "[mantela-cli] が無い",
+			name:  "no [mantela-cli]",
 			files: map[string]string{"station.toml": `[mantela]` + "\n" + `version = "0.1.0"`},
 			want:  "[mantela-cli] is missing",
 		},
 		{
-			name:  "[mantela-cli] version が無い",
+			name:  "no [mantela-cli] version",
 			files: map[string]string{"station.toml": "[mantela-cli]\n"},
 			want:  "[mantela-cli] version is missing",
 		},
 		{
-			name:  "形式の版が新しい",
+			name:  "newer format version",
 			files: map[string]string{"station.toml": "[mantela-cli]\nversion = 2\n"},
 			want:  "use a newer mantela-cli",
 		},
 		{
-			name: "aboutMe の必須項目が無い",
+			name: "aboutMe missing a required field",
 			files: map[string]string{"station.toml": `
 [mantela-cli]
 version = 1
@@ -184,14 +184,14 @@ name = "Example Station"
 			want: "[mantela.aboutMe] identifier is required",
 		},
 		{
-			name: "Mantela の版が 0.1.x でない",
+			name: "Mantela version is not 0.1.x",
 			files: map[string]string{
 				"station.toml": strings.Replace(minimalStation, `version = "0.1.0"`, `version = "0.2.0"`, 1),
 			},
 			want: `[mantela] version = "0.2.0" is not supported`,
 		},
 		{
-			name: "kind = group はまだ扱わない",
+			name: "kind = group not supported yet",
 			files: map[string]string{
 				"station.toml":         minimalStation,
 				"extensions/6000.toml": "name = \"全台\"\nkind = \"group\"\nmembers = [\"6001\"]\n",
@@ -199,7 +199,7 @@ name = "Example Station"
 			want: `kind = "group" is not supported yet`,
 		},
 		{
-			name: "mode = ip はまだ扱わない",
+			name: "mode = ip not supported yet",
 			files: map[string]string{
 				"station.toml":             minimalStation,
 				"providers/station-c.toml": strings.Replace(minimalProvider, `"register"`, `"ip"`, 1),
@@ -207,7 +207,7 @@ name = "Example Station"
 			want: `[trunk] mode = "ip" is not supported yet`,
 		},
 		{
-			name: "register に host が無い",
+			name: "register without host",
 			files: map[string]string{
 				"station.toml":             minimalStation,
 				"providers/station-a.toml": strings.Replace(minimalProvider, `host = "192.0.2.10"`, "", 1),
@@ -215,7 +215,7 @@ name = "Example Station"
 			want: `[trunk] host is required for mode = "register"`,
 		},
 		{
-			name: "公開する内線に name が無い",
+			name: "published extension without name",
 			files: map[string]string{
 				"station.toml":         minimalStation,
 				"extensions/6001.toml": `type = "phone"`,
@@ -223,7 +223,7 @@ name = "Example Station"
 			want: "name is required for extensions published in Mantela",
 		},
 		{
-			name: "公開する provider に url が無い",
+			name: "published provider without url",
 			files: map[string]string{
 				"station.toml":             minimalStation,
 				"providers/station-a.toml": strings.Replace(minimalProvider, `url = "https://station-a.example.org/.well-known/mantela.json"`, "", 1),
@@ -231,7 +231,7 @@ name = "Example Station"
 			want: "url is required for providers published in Mantela",
 		},
 		{
-			name: "内線の identifier の重複",
+			name: "duplicate extension identifier",
 			files: map[string]string{
 				"station.toml":         minimalStation,
 				"extensions/6001.toml": "name = \"a\"\nidentifier = \"A1B2C3D4\"\n",
@@ -240,7 +240,7 @@ name = "Example Station"
 			want: `identifier "A1B2C3D4" is also used in`,
 		},
 		{
-			name: "provider の prefix の重複",
+			name: "duplicate provider prefix",
 			files: map[string]string{
 				"station.toml":             minimalStation,
 				"providers/station-a.toml": minimalProvider,
@@ -249,7 +249,7 @@ name = "Example Station"
 			want: `prefix "300" is also used in`,
 		},
 		{
-			name: "道具が生成するキーを [pjsip.*] に書いた",
+			name: "generated key set in [pjsip.*]",
 			files: map[string]string{
 				"station.toml":         minimalStation,
 				"extensions/6001.toml": "name = \"a\"\n[pjsip.endpoint]\naors = \"x\"\n",
@@ -257,7 +257,7 @@ name = "Example Station"
 			want: "[pjsip.endpoint] aors is generated by mantela-cli and must not be set",
 		},
 		{
-			name: "内線に書けない [pjsip.*] の種別",
+			name: "[pjsip.*] type not allowed for extensions",
 			files: map[string]string{
 				"station.toml":         minimalStation,
 				"extensions/6001.toml": "name = \"a\"\n[pjsip.registration]\nexpiration = 60\n",
@@ -265,7 +265,7 @@ name = "Example Station"
 			want: "[pjsip.registration] is not allowed for extensions",
 		},
 		{
-			name: "[pjsip.*] の値の型",
+			name: "[pjsip.*] value type",
 			files: map[string]string{
 				"station.toml":         minimalStation,
 				"extensions/6001.toml": "name = \"a\"\n[pjsip.aor]\nmax_contacts = 1.5\n",
@@ -283,19 +283,20 @@ name = "Example Station"
 				"--asterisk", filepath.Join(out, "asterisk"),
 			}, &stdout, &stderr)
 			if code != exitError {
-				t.Errorf("終了コード %d、want %d", code, exitError)
+				t.Errorf("exit code %d, want %d", code, exitError)
 			}
 			if !strings.Contains(stderr.String(), tt.want) {
-				t.Errorf("stderr に %q がありません\nstderr:\n%s", tt.want, stderr.String())
+				t.Errorf("stderr does not contain %q\nstderr:\n%s", tt.want, stderr.String())
 			}
 			if files := listFiles(t, out); len(files) > 0 {
-				t.Errorf("エラーなのにファイルを書いています: %v", files)
+				t.Errorf("files written despite the error: %v", files)
 			}
 		})
 	}
 }
 
-// TestOverwriteProtection は、印の無いファイルと手で編集された生成物を上書きしないことを確かめる。
+// TestOverwriteProtection checks that files without the header and generated files edited
+// by hand are not overwritten.
 func TestOverwriteProtection(t *testing.T) {
 	dir := writeStation(t, map[string]string{
 		"station.toml":         minimalStation,
@@ -310,46 +311,46 @@ func TestOverwriteProtection(t *testing.T) {
 		return code, stderr.String()
 	}
 
-	t.Run("生成物は上書きできる", func(t *testing.T) {
+	t.Run("generated files can be overwritten", func(t *testing.T) {
 		out := t.TempDir()
 		for range 2 {
 			if code, stderr := buildTo(out); code != exitOK {
-				t.Fatalf("終了コード %d\n%s", code, stderr)
+				t.Fatalf("exit code %d\n%s", code, stderr)
 			}
 		}
 	})
 
-	t.Run("印の無いファイル", func(t *testing.T) {
+	t.Run("file without the header", func(t *testing.T) {
 		out := t.TempDir()
 		userConf := "[global]\ntype = global\n"
 		writeFile(t, filepath.Join(out, "asterisk", "pjsip.conf"), userConf)
 		code, stderr := buildTo(out)
 		if code != exitError || !strings.Contains(stderr, "not generated by mantela-cli") {
-			t.Fatalf("終了コード %d\n%s", code, stderr)
+			t.Fatalf("exit code %d\n%s", code, stderr)
 		}
 		if got := readFile(t, filepath.Join(out, "asterisk", "pjsip.conf")); got != userConf {
-			t.Errorf("利用者のファイルが書き換わっています:\n%s", got)
+			t.Errorf("the user's file was rewritten:\n%s", got)
 		}
-		// 1つでも上書きできなければ、ほかの生成物も書かない
+		// If any file cannot be overwritten, no other output is written either
 		if files := listFiles(t, out); !slices.Equal(files, []string{"asterisk/pjsip.conf"}) {
-			t.Errorf("ほかの生成物を書いています: %v", files)
+			t.Errorf("other outputs were written: %v", files)
 		}
 	})
 
-	t.Run("手で編集された生成物", func(t *testing.T) {
+	t.Run("generated file edited by hand", func(t *testing.T) {
 		out := t.TempDir()
 		if code, stderr := buildTo(out); code != exitOK {
-			t.Fatalf("終了コード %d\n%s", code, stderr)
+			t.Fatalf("exit code %d\n%s", code, stderr)
 		}
 		path := filepath.Join(out, "asterisk", "extensions.conf")
 		edited := readFile(t, path) + "exten => 9999,1,Hangup()\n"
 		writeFile(t, path, edited)
 		code, stderr := buildTo(out)
 		if code != exitError || !strings.Contains(stderr, "edited by hand") {
-			t.Fatalf("終了コード %d\n%s", code, stderr)
+			t.Fatalf("exit code %d\n%s", code, stderr)
 		}
 		if got := readFile(t, path); got != edited {
-			t.Errorf("編集されたファイルが書き換わっています")
+			t.Errorf("the edited file was rewritten")
 		}
 	})
 }
@@ -364,8 +365,8 @@ func writeFile(t *testing.T, path, content string) {
 	}
 }
 
-// TestMark は、生成物の印のハッシュが、印の行より後ろの本文の sha256 であることを確かめる。
-// samples/out/asterisk の手書きの期待値と同じ方式であることも確かめる。
+// TestMark checks that the hash in the header is the sha256 of the body after the header,
+// the same scheme as the hand-written expected files in samples/out/asterisk.
 func TestMark(t *testing.T) {
 	for _, path := range []string{"samples/out/asterisk/pjsip.conf", "samples/out/asterisk/extensions.conf"} {
 		if err := build.CheckOverwrite(path); err != nil {
@@ -374,7 +375,7 @@ func TestMark(t *testing.T) {
 	}
 	data := string(build.WithMark("\n[a]\n"))
 	if !strings.HasPrefix(data, build.MarkLine+"\n; sha256:") {
-		t.Errorf("印の形が違います:\n%s", data)
+		t.Errorf("unexpected header:\n%s", data)
 	}
 }
 
@@ -385,14 +386,14 @@ func TestUsage(t *testing.T) {
 	}{
 		{nil, exitUsage},
 		{[]string{"unknown"}, exitUsage},
-		{[]string{"build"}, exitUsage}, // 出力先の指定が無い
+		{[]string{"build"}, exitUsage}, // no output specified
 		{[]string{"build", "extra"}, exitUsage},
 		{[]string{"-h"}, exitOK},
 	}
 	for _, tt := range tests {
 		var stdout, stderr bytes.Buffer
 		if code := run(tt.args, &stdout, &stderr); code != tt.code {
-			t.Errorf("run(%q) = %d、want %d\n%s", tt.args, code, tt.code, stderr.String())
+			t.Errorf("run(%q) = %d, want %d\n%s", tt.args, code, tt.code, stderr.String())
 		}
 	}
 }

@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
-// Validate は、build の前に、重複と Mantela の必須項目を確かめる。
+// Validate checks duplicates and required Mantela fields before build.
 //
-// 段階0では、これ以外の検査（type の列挙、identifier の文字種など）は行わない。
+// Stage 0 does no other checks (type enumeration, identifier characters, etc.).
 func (st *Station) Validate() error {
 	var errs []error
 	errs = append(errs, st.validateMantela()...)
@@ -56,7 +56,7 @@ func (st *Station) validateMantela() []error {
 				}
 			}
 		} else if p.Enabled && p.Trunk != nil && p.Prefix == "" {
-			// 載せない provider でも、発信ルートを作るには prefix が要る
+			// An unpublished provider still needs prefix for the outbound route
 			errs = append(errs, fmt.Errorf("%s: prefix is required to generate the outbound route", p.File))
 		}
 	}
@@ -87,7 +87,7 @@ func (st *Station) validateDuplicates() []error {
 		dup("prefix", p.Prefix, p.File, prefixes)
 	}
 
-	// pjsip.conf では内線番号と slug がどちらもセクション名になるので、同じ名前は使えない
+	// Extension numbers and slugs are both section names in pjsip.conf, so they must not collide
 	names := map[string]string{}
 	for _, e := range st.Extensions {
 		names[e.Number] = e.File

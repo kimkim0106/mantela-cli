@@ -1,5 +1,5 @@
-// Package ordered は、キーを入れた順に保つ map を提供する。
-// mantela.json の項目を決まった順で出力するために使う。
+// Package ordered provides a map that keeps keys in insertion order.
+// It is used to output mantela.json fields in a fixed order.
 package ordered
 
 import (
@@ -7,18 +7,18 @@ import (
 	"encoding/json"
 )
 
-// Map は、キーを入れた順に保つ map。JSON にするときもその順で出力する。
+// Map is a map that keeps keys in insertion order, also when marshaled to JSON.
 type Map struct {
 	keys   []string
 	values map[string]any
 }
 
-// New は空の Map を作る。
+// New returns an empty Map.
 func New() *Map {
 	return &Map{values: map[string]any{}}
 }
 
-// Set はキーに値を入れる。新しいキーは末尾に足し、既にあるキーは位置を変えずに値だけ替える。
+// Set sets the value for key. A new key is appended; an existing key keeps its position.
 func (m *Map) Set(key string, value any) {
 	if _, ok := m.values[key]; !ok {
 		m.keys = append(m.keys, key)
@@ -26,24 +26,24 @@ func (m *Map) Set(key string, value any) {
 	m.values[key] = value
 }
 
-// Get はキーの値を返す。
+// Get returns the value for key.
 func (m *Map) Get(key string) (any, bool) {
 	v, ok := m.values[key]
 	return v, ok
 }
 
-// Keys はキーを入れた順で返す。
+// Keys returns the keys in insertion order.
 func (m *Map) Keys() []string {
 	return m.keys
 }
 
-// Len はキーの数を返す。
+// Len returns the number of keys.
 func (m *Map) Len() int {
 	return len(m.keys)
 }
 
-// MarshalJSON はキーを入れた順で JSON のオブジェクトにする。
-// HTML 向けのエスケープ（< を < にするなど）はしない。
+// MarshalJSON encodes m as a JSON object with keys in insertion order.
+// It does not escape HTML characters such as <, > and &.
 func (m *Map) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteByte('{')
@@ -69,7 +69,7 @@ func encode(buf *bytes.Buffer, v any) error {
 	if err := enc.Encode(v); err != nil {
 		return err
 	}
-	// Encode が末尾に足す改行を取る
+	// drop the trailing newline added by Encode
 	buf.Truncate(buf.Len() - 1)
 	return nil
 }

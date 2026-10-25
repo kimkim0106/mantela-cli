@@ -1,7 +1,7 @@
-// Package station は局ディレクトリ（station.toml、extensions/、providers/）を読み込む。
+// Package station loads a station directory (station.toml, extensions/, providers/).
 //
-// 段階0（MVP）では defaults.toml は読まない。内線は kind = "device"、
-// トランクは mode = "register" だけに対応する。
+// Stage 0 (MVP) does not read defaults.toml, and supports only kind = "device"
+// extensions and mode = "register" trunks.
 package station
 
 import (
@@ -17,82 +17,82 @@ import (
 	"github.com/kimkim0106/mantela-cli/internal/ordered"
 )
 
-// FormatVersion は、この mantela-cli が読める局ディレクトリの形式の版。
+// FormatVersion is the station directory format version this mantela-cli can read.
 const FormatVersion = 1
 
-// DefaultSecrets は [asterisk] secrets の組み込みの既定値。
+// DefaultSecrets is the built-in default of [asterisk] secrets.
 const DefaultSecrets = "/etc/asterisk/pjsip_secrets.conf"
 
-// Station は読み込んだ局ディレクトリ全体。
+// Station is a loaded station directory.
 type Station struct {
 	Dir string
 
-	// MantelaVersion は [mantela] version（出力する Mantela の版）。
+	// MantelaVersion is [mantela] version (the Mantela version to output).
 	MantelaVersion string
-	// AboutMe は [mantela.aboutMe] の中身。キーは書いた順に並ぶ。
+	// AboutMe is the content of [mantela.aboutMe], with keys in the order written.
 	AboutMe *ordered.Map
-	// Secrets は [asterisk] secrets（生成した pjsip.conf の先頭で #include するファイル）。
+	// Secrets is [asterisk] secrets (the file #included at the top of the generated pjsip.conf).
 	Secrets string
 
-	// Extensions は内線番号の文字列順に並ぶ。
+	// Extensions are ordered by extension number as a string.
 	Extensions []*Extension
-	// Providers は slug の文字列順に並ぶ。
+	// Providers are ordered by slug as a string.
 	Providers []*Provider
 
-	// Warnings は読み込み中に見つかった警告（未知のキーなど）。
+	// Warnings found while loading (unknown keys, etc.).
 	Warnings []string
 }
 
-// Extension は extensions/<番号>.toml の1つ分。
+// Extension is one extensions/<number>.toml.
 type Extension struct {
-	Number string // ファイル名から取った内線番号
+	Number string // extension number taken from the file name
 	File   string
 
 	Name       string
-	Type       string // 省略時は kind から決めた値（device なら phone）
-	Identifier string // 空なら Mantela に出力しない
+	Type       string // derived from kind when omitted (phone for device)
+	Identifier string // not output to Mantela when empty
 	Model      string
 	Publish    bool
 
-	Pjsip map[string]PjsipSection // キーは endpoint / aor / auth
+	Pjsip map[string]PjsipSection // keyed by endpoint / aor / auth
 }
 
-// Provider は providers/<slug>.toml の1つ分。
+// Provider is one providers/<slug>.toml.
 type Provider struct {
-	Slug string // ファイル名から取った識別名
+	Slug string // identifier taken from the file name
 	File string
 
 	Name       string
 	Prefix     string
 	Identifier string
-	URL        string // Mantela の mantela として出力する
+	URL        string // output as mantela in Mantela
 	Enabled    bool
 	Publish    bool
 
-	Trunk *Trunk                  // [trunk] が無ければ nil（Mantela 掲載のみ）
-	Pjsip map[string]PjsipSection // キーは endpoint / aor / auth / registration / identify
+	Trunk *Trunk                  // nil without [trunk] (listed in Mantela only)
+	Pjsip map[string]PjsipSection // keyed by endpoint / aor / auth / registration / identify
 }
 
-// Trunk は providers/<slug>.toml の [trunk]。
+// Trunk is [trunk] in providers/<slug>.toml.
 type Trunk struct {
-	Mode        string // 段階0では "register" だけ
+	Mode        string // only "register" in stage 0
 	Host        string
 	StripPrefix bool
 	Prepend     string
-	Username    string // 省略時は slug
-	ContactUser string // 省略時は slug
+	Username    string // slug when omitted
+	ContactUser string // slug when omitted
 }
 
-// PjsipSection は [pjsip.<種別>] の1つ分。キーは書いた順に並ぶ。
+// PjsipSection is one [pjsip.<type>], with keys in the order written.
 type PjsipSection []PjsipKey
 
-// PjsipKey は [pjsip.*] の1つのキー。配列は Values が複数になり、同じキーを複数行で出力する。
+// PjsipKey is one key in [pjsip.*]. An array gives multiple Values, written as repeated lines.
 type PjsipKey struct {
 	Name   string
 	Values []string
 }
 
-// Has は、セクションに name のキーがあるかを返す。
+// Has reports whether the section has the key name.
 func (s PjsipSection) Has(name string) bool {
 	return slices.ContainsFunc(s, func(k PjsipKey) bool { return k.Name == name })
 }
@@ -107,7 +107,7 @@ type stationFile struct {
 	} `toml:"mantela"`
 	Asterisk struct {
 		Secrets *string `toml:"secrets"`
-		Hop     *bool   `toml:"hop"` // 段階0では読むだけで使わない（PBX 間ホップは段階2）
+		Hop     *bool   `toml:"hop"` // read but unused in stage 0 (inter-PBX hop comes in stage 2)
 	} `toml:"asterisk"`
 }
 
@@ -143,15 +143,15 @@ type trunkFile struct {
 	ContactUser string `toml:"contact_user"`
 }
 
-// 要素ごとに書ける [pjsip.*] の種別
+// [pjsip.*] section types allowed for each element
 var (
 	extensionSections = []string{"auth", "aor", "endpoint"}
 	registerSections  = []string{"auth", "aor", "endpoint", "registration", "identify"}
 )
 
-// Load は dir の局ディレクトリを読み込む。
+// Load loads the station directory dir.
 //
-// エラーがあっても、station.toml が読めていれば Station を返す（Warnings を表示できるように）。
+// Even on error, it returns the Station once station.toml is read, so that Warnings can be shown.
 func Load(dir string) (*Station, error) {
 	st := &Station{Dir: dir}
 	if err := st.loadStation(); err != nil {
@@ -248,7 +248,7 @@ func (st *Station) loadExtension(file tomlFile) (*Extension, []error) {
 		Pjsip:      pjsip,
 	}
 	if e.Type == "" {
-		e.Type = "phone" // kind = "device" の既定
+		e.Type = "phone" // default for kind = "device"
 	}
 	return e, nil
 }
@@ -312,7 +312,7 @@ func (st *Station) loadProvider(file tomlFile) (*Provider, []error) {
 			ContactUser: stringOr(t.ContactUser, file.name),
 		}
 	}
-	// [trunk] が無ければ pjsip の設定は作らないので、[pjsip.*] も読まない
+	// Without [trunk] no pjsip config is generated, so [pjsip.*] is not read
 	if p.Trunk != nil {
 		pjsip, perrs := pjsipSections(md, file.path, f.Pjsip, registerSections, "mode = \"register\" trunks")
 		errs = append(errs, perrs...)
@@ -330,12 +330,12 @@ func (st *Station) warnf(format string, args ...any) {
 	st.Warnings = append(st.Warnings, fmt.Sprintf(format, args...))
 }
 
-// warnUndecoded は、どの項目にも当たらなかった未知のキーを警告する。
-// テーブルごと未知なら、テーブルの名前だけを知らせる。
+// warnUndecoded warns about unknown keys that matched no field.
+// If a whole table is unknown, only the table name is reported.
 //
-// passthrough には、中身を解釈せずにそのまま使うテーブルを渡す。BurntSushi/toml は、
-// map[string]any に読んだテーブルの中のインラインテーブルのキーも Undecoded() に含めるので、
-// その中のキーは見ない。
+// passthrough is a table used as is without interpretation. Keys under it are skipped,
+// because BurntSushi/toml also reports keys of inline tables inside a table decoded
+// into map[string]any in Undecoded().
 func (st *Station) warnUndecoded(path string, md toml.MetaData, passthrough toml.Key) {
 	undecoded := md.Undecoded()
 	for _, k := range undecoded {
@@ -350,12 +350,12 @@ func (st *Station) warnUndecoded(path string, md toml.MetaData, passthrough toml
 }
 
 type tomlFile struct {
-	name string // 拡張子を除いたファイル名（内線番号や slug）
+	name string // file name without the extension (extension number or slug)
 	path string
 }
 
-// tomlFiles は dir にある *.toml を、拡張子を除いた名前の文字列順で返す。
-// ディレクトリが無ければ空を返す。. で始まるファイル（エディタの一時ファイルなど）は読まない。
+// tomlFiles returns *.toml in dir, ordered by name without the extension.
+// It returns nothing if dir does not exist, and skips files starting with . (editor temp files, etc.).
 func tomlFiles(dir string) ([]tomlFile, error) {
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
