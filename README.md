@@ -47,7 +47,7 @@ Put the generated files on the PBX (for example in `/etc/asterisk/mantela-cli/`)
 #include mantela-cli/extensions.conf
 ```
 
-Passwords are never written by mantela-cli. The generated `pjsip.conf` includes the secrets file (`[asterisk] secrets`, default `/etc/asterisk/pjsip_secrets.conf`) and inherits from templates in it: `secret-<extension>` for extensions and `secret-trunk-<slug>` for trunks.
+This version does not handle passwords: they appear in neither the station directory nor the generated files, so both are safe to commit. Write them by hand in the secrets file (`[asterisk] secrets`, default `/etc/asterisk/pjsip_secrets.conf`) on the PBX. The generated `pjsip.conf` includes that file and inherits from templates in it: `secret-<extension>` for extensions and `secret-trunk-<slug>` for trunks.
 
 ```ini
 [secret-6001](!)
